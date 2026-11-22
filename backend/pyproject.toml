@@ -1,0 +1,15 @@
+[project]
+name = "ai-study-assistant-backend"
+version = "1.0.0"
+description = "FastAPI backend for the AI Study Assistant"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100

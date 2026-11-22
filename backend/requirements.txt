@@ -1,0 +1,28 @@
+# Runtime dependencies for the FastAPI backend.
+# Pinned to the exact versions the test suite runs against (126 tests).
+# Install with: pip install -r requirements.txt
+# For development/testing, use requirements-dev.txt instead.
+
+# Core
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.4
+pydantic-settings==2.16.3
+python-multipart==0.0.34
+email-validator==2.4.0
+
+# Database
+SQLAlchemy==2.1.9
+alembic==1.20.1
+psycopg[binary]==3.3.9
+
+# Auth
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0
+
+# AI
+google-generativeai==0.8.6
+chromadb==1.5.9
+
+# PDF
+PyMuPDF==2.1
