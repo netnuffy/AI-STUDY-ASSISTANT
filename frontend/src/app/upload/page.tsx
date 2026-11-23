@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   FileText,
+  FolderUp,
   Loader2,
   RefreshCw,
   Sparkles,
@@ -58,11 +59,13 @@ export default function UploadPage() {
   const [docs, setDocs] = useState<StudyDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
   const [summaryDoc, setSummaryDoc] = useState<StudyDocument | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryStyle, setSummaryStyle] = useState("standard");
   const fileRef = useRef<HTMLInputElement>(null);
+  const folderRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -81,8 +84,12 @@ export default function UploadPage() {
     load();
   }, [load]);
 
-  // While any document is still processing, refresh the list every 5 seconds
-  // so the status flips to "ready" on its own.
+  // webkitdirectory is not a React prop: set it directly on the folder
+  // input after mount, so the picker lets the user choose a whole folder
+  // (Chrome/Edge). Phones ignore it and fall back to picking files.
+  useEffect(() => {
+    folderRef.current?.setAttribute("webkitdirectory", "");
+  }, []);
   useEffect(() => {
     if (!docs.some((d) => d.status === "uploading" || d.status === "processing"))
       return;
@@ -90,32 +97,60 @@ export default function UploadPage() {
     return () => clearInterval(timer);
   }, [docs, load]);
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      toast.error("Only PDF files are allowed");
-      return;
+    if (picked.length === 0) return;
+
+    const pdfs = picked.filter((f) => f.name.toLowerCase().endsWith(".pdf"));
+    const skipped = picked.length - pdfs.length;
+    const tooBig = pdfs.filter((f) => f.size > 25 * 1024 * 1024);
+    const toUpload = pdfs.filter((f) => f.size <= 25 * 1024 * 1024);
+    if (skipped > 0) {
+      toast.error(`${skipped} non-PDF file(s) skipped — only PDFs are supported`);
     }
-    if (file.size > 25 * 1024 * 1024) {
-      toast.error("File is too large (max 25 MB)");
-      return;
+    if (tooBig.length > 0) {
+      toast.error(
+        `${tooBig.length} file(s) skipped — larger than the 25 MB limit`
+      );
     }
+    if (toUpload.length === 0) return;
+
     setUploading(true);
+    let done = 0;
+    let failed = 0;
     try {
-      const form = new FormData();
-      form.append("file", file);
-      await apiFetch<StudyDocument>("/documents/upload", {
-        method: "POST",
-        body: form,
-      });
-      toast.success("Upload started — processing in the background");
+      for (const file of toUpload) {
+        setUploadProgress(`Uploading ${done + 1} of ${toUpload.length}…`);
+        try {
+          const form = new FormData();
+          form.append("file", file);
+          await apiFetch<StudyDocument>("/documents/upload", {
+            method: "POST",
+            body: form,
+          });
+          done += 1;
+        } catch (err) {
+          failed += 1;
+          toast.error(
+            `"${file.name}": ${err instanceof ApiError ? err.message : "Upload failed"}`
+          );
+        }
+      }
+      if (done > 0) {
+        toast.success(
+          done === 1
+            ? "Upload started — processing in the background"
+            : `${done} PDFs uploaded — processing in the background`
+        );
+      }
+      if (failed > 0 && done === 0) {
+        toast.error("All uploads failed — please try again");
+      }
       load();
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Upload failed");
     } finally {
       setUploading(false);
+      setUploadProgress("");
     }
   }
 
@@ -154,27 +189,52 @@ export default function UploadPage() {
   return (
     <Protected>
       <div className="container space-y-6 py-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Upload PDF</h1>
             <p className="text-muted-foreground">
               Upload lecture notes or textbook chapters — up to 25 MB each.
+              Pick several files, or a whole folder of PDFs at once.
             </p>
-          </div>
-          <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
-            {uploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4" />
+            {uploading && uploadProgress && (
+              <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {uploadProgress}
+              </p>
             )}
-            Upload PDF
-          </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              Upload files
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => folderRef.current?.click()}
+              disabled={uploading}
+            >
+              <FolderUp className="h-4 w-4" />
+              Upload folder
+            </Button>
+          </div>
           <input
             ref={fileRef}
             type="file"
             accept=".pdf,application/pdf"
+            multiple
             className="hidden"
-            onChange={handleUpload}
+            onChange={handleFiles}
+          />
+          <input
+            ref={folderRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            className="hidden"
+            onChange={handleFiles}
           />
         </div>
 
@@ -190,11 +250,21 @@ export default function UploadPage() {
               <p className="mt-4 font-medium">No documents yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Upload your first PDF to get summaries, flashcards and quizzes.
+                You can pick several files, or a whole folder, at once.
               </p>
-              <Button className="mt-4" onClick={() => fileRef.current?.click()}>
-                <Upload className="h-4 w-4" />
-                Upload PDF
-              </Button>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <Button onClick={() => fileRef.current?.click()}>
+                  <Upload className="h-4 w-4" />
+                  Upload files
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => folderRef.current?.click()}
+                >
+                  <FolderUp className="h-4 w-4" />
+                  Upload folder
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (

@@ -11,6 +11,7 @@ import {
   Loader2,
   Sparkles,
   Target,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -350,12 +351,20 @@ export default function DashboardPage() {
                   <CardTitle>Uploaded documents</CardTitle>
                   <CardDescription>Your latest uploads.</CardDescription>
                 </div>
-                <Link href="/upload">
-                  <Button variant="ghost" size="sm">
-                    Manage all
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Link href="/upload">
+                    <Button size="sm">
+                      <Upload className="h-4 w-4" />
+                      Upload PDF
+                    </Button>
+                  </Link>
+                  <Link href="/upload">
+                    <Button variant="ghost" size="sm">
+                      Manage all
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
