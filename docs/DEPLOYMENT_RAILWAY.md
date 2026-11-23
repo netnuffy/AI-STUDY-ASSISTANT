@@ -146,10 +146,18 @@ alembic==1.20.1
 psycopg[binary]==3.3.9
 python-jose[cryptography]==3.5.0
 bcrypt==5.0.0
-google-generativeai==0.8.6
+google-genai==3.6.1
 chromadb==1.5.9
 PyMuPDF==2.1
 ```
+
+> 2026-11-23: the Gemini SDK was migrated from `google-generativeai==0.8.6`
+> to `google-genai==3.6.1`. The old SDK talks to the Gemini v1beta API,
+> where the `text-embedding-004` model does not exist — live document
+> processing and chat failed with 404 "models/text-embedding-004 is not
+> found for API version v1beta". The new SDK uses the v1 API, where the
+> model works. `core/gemini.py` was rewritten for the new SDK; its four
+> public functions keep the same signatures.
 
 Test-only packages moved to `requirements-dev.txt`, which includes the
 runtime file and adds `pytest==9.2.0` + `httpx==0.28.1` (TestClient needs
