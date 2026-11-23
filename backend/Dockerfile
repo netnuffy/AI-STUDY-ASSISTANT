@@ -25,10 +25,13 @@ COPY . .
 # volume, uploads and the vector index are lost on redeploy.
 RUN mkdir -p uploads chroma_data
 
-# Run as a non-root user.
-RUN useradd --create-home --uid 10001 appuser \
-    && chown -R appuser:appuser /app
-USER appuser
+# NOTE: the container intentionally runs as root. Railway mounts volumes
+# root-owned, and the app creates its upload/chroma directories inside the
+# volume at startup (see app/application.py lifespan). An earlier version
+# ran as a non-root appuser and crashed on Railway with
+# "PermissionError: [Errno 13] Permission denied: '/app/data/uploads'"
+# (2026-11-23). Do not re-add a USER directive without also handling
+# volume ownership.
 
 EXPOSE 8000
 
