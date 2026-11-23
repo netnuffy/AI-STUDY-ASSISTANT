@@ -74,7 +74,7 @@ Screenshots are generated from a running app with demo data — see
 | Backend | FastAPI, SQLAlchemy, Alembic, Pydantic |
 | Database | PostgreSQL 16 |
 | Vector store | ChromaDB |
-| AI | Google Gemini (`gemini-1.5-flash`, `text-embedding-004`) |
+| AI | Google Gemini (`gemini-3.5-flash`, `gemini-embedding-2`) |
 | PDF | PyMuPDF |
 | Auth | JWT (access + refresh), bcrypt |
 | Deployment | Railway (backend), Vercel (frontend) |

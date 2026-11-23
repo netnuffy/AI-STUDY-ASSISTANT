@@ -153,7 +153,7 @@ All endpoints except `/auth/*` and `/health` require a JWT:
 
 1. Upload returns immediately with `status: uploading`.
 2. A background task extracts text (PyMuPDF), chunks it (1,000 chars, 200 overlap),
-   embeds chunks (Gemini `text-embedding-004`) into ChromaDB, and generates a
+   embeds chunks (Gemini `gemini-embedding-2`) into ChromaDB, and generates a
    summary (map-reduce with Gemini).
 3. The document becomes `status: ready`. On failure it becomes `failed` with an
    `error_message`. The frontend polls `GET /documents/{id}` for status.

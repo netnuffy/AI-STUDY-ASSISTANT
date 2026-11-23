@@ -7,8 +7,11 @@ only when actually used without the package or API key.
 Migrated from the deprecated google-generativeai SDK on 2026-11-23: the old
 SDK talks to the Gemini v1beta API, where the text-embedding-004 model does
 not exist (404 "models/text-embedding-004 is not found for API version
-v1beta"), which broke document processing and chat on the live backend.
-The google-genai SDK uses the v1 API, where text-embedding-004 works.
+v1beta"). Note text-embedding-004 was in fact shut down on the Gemini API
+on 2026-01-14, so it 404s on v1 too — the embedding model is now
+gemini-embedding-2 and the generation model gemini-3.5-flash (both
+verified current as of Nov 2026; gemini-1.5-flash is retired as well).
+The google-genai SDK uses the v1 API.
 """
 
 import json

@@ -181,8 +181,8 @@ generate `JWT_SECRET_KEY` (`openssl rand -hex 32`).
 | `CORS_ORIGINS` | `["https://your-app.vercel.app"]` — your frontend URL, once deployed | Yes, after frontend deploy |
 | `UPLOAD_DIR` | `/app/data/uploads` | With a Volume (§5 step 4) |
 | `CHROMA_PERSIST_DIR` | `/app/data/chroma_data` | With a Volume (§5 step 4) |
-| `GEMINI_MODEL` | `gemini-1.5-flash` (default) | No |
-| `GEMINI_EMBEDDING_MODEL` | `text-embedding-004` (default) | No |
+| `GEMINI_MODEL` | `gemini-3.5-flash` (default) | No |
+| `GEMINI_EMBEDDING_MODEL` | `gemini-embedding-2` (default) | No |
 | `MAX_UPLOAD_MB` | `25` (default) | No |
 
 Railway injects `PORT` automatically — do not set it yourself.

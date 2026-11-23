@@ -54,9 +54,9 @@ Students and self-learners who study from PDFs and want an AI tutor grounded in 
              │             │                  │
       ┌──────▼──────┐ ┌────▼───────┐  ┌──────▼───────────────────┐
       │ PostgreSQL  │ │ ChromaDB   │  │  Google Gemini API       │
-      │ (SQLAlchemy)│ │ (Vector    │  │  · gemini-1.5-flash      │
+      │ (SQLAlchemy)│ │ (Vector    │  │  · gemini-3.5-flash      │
       │ Users · Docs│ │  Store)    │  │    (generation)          │
-      │ Summaries · │ │ Embeddings │  │  · text-embedding-004    │
+      │ Summaries · │ │ Embeddings │  │  · gemini-embedding-2    │
       │ Flashcards ·│ │ + metadata │  │    (embeddings)          │
       │ Quizzes ·   │ │ per user / │  │                          │
       │ Plans ·     │ │ per doc    │  │                          │
@@ -324,7 +324,7 @@ ai-study-assistant/
 ## 5. ChromaDB Design (Vector Store)
 
 - **One collection:** `pdf_chunks`
-- **Embedding model:** `text-embedding-004` (Gemini, 768 dims)
+- **Embedding model:** `gemini-embedding-2` (Gemini, 3072 dims)
 - **Chunking:** ~1,000 characters per chunk, 200-character overlap, split on sentence boundaries
 - **Metadata stored per chunk:**
 
@@ -349,7 +349,7 @@ ai-study-assistant/
 User question
       │
       ▼
-1. Embed question (Gemini text-embedding-004)
+1. Embed question (Gemini gemini-embedding-2)
       │
       ▼
 2. ChromaDB similarity search
@@ -362,7 +362,7 @@ User question
       in the context, say you don't know."
       │
       ▼
-4. Gemini gemini-1.5-flash generates the answer
+4. Gemini gemini-3.5-flash generates the answer
       │
       ▼
 5. Return answer + source citations (page numbers)
@@ -594,7 +594,7 @@ API docs available at `http://localhost:8000/docs` (Swagger UI).
 
 | Risk | Mitigation |
 |---|---|
-| Gemini API cost at scale | Cache summaries/flashcards/quizzes in Postgres; use `gemini-1.5-flash` (cheap) for generation; rate-limit per user |
+| Gemini API cost at scale | Cache summaries/flashcards/quizzes in Postgres; use `gemini-3.5-flash` (cheap) for generation; rate-limit per user |
 | Large PDFs slow to process | Background jobs + status polling; chunk-level parallelism; 25 MB cap |
 | Hallucinated answers | Strict RAG grounding prompt + citations; "I don't know" fallback |
 | Scanned PDFs with no text layer | OCR fallback (Tesseract) in Phase 2; warn user if extraction yields little text |
