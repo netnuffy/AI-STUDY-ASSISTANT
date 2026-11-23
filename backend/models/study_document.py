@@ -32,8 +32,15 @@ class StudyDocument(Base, TimestampMixin):
     file_path: Mapped[str] = mapped_column(String(1000), nullable=False)
     file_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # values_callable is required: SQLAlchemy's Enum persists member NAMES
+    # ("UPLOADING") by default, but the Postgres enum type (migration 0001)
+    # only accepts the lowercase VALUES ("uploading"). Without this, every
+    # INSERT fails on Postgres with InvalidTextRepresentation. SQLite tests
+    # cannot catch this because SQLite has no real enums.
     status: Mapped[DocumentStatus] = mapped_column(
-        SAEnum(DocumentStatus), nullable=False, default=DocumentStatus.UPLOADING
+        SAEnum(DocumentStatus, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+        default=DocumentStatus.UPLOADING,
     )
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 

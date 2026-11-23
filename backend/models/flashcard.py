@@ -35,8 +35,12 @@ class Flashcard(Base, TimestampMixin):
     )
     front: Mapped[str] = mapped_column(Text, nullable=False)
     back: Mapped[str] = mapped_column(Text, nullable=False)
+    # values_callable: persist lowercase enum VALUES ("easy"), not member
+    # NAMES ("EASY") — the Postgres enum type only accepts the values.
     difficulty: Mapped[Difficulty] = mapped_column(
-        SAEnum(Difficulty), nullable=False, default=Difficulty.MEDIUM
+        SAEnum(Difficulty, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+        default=Difficulty.MEDIUM,
     )
     known: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     review_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

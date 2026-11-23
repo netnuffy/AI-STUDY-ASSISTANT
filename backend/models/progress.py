@@ -33,8 +33,11 @@ class StudySession(Base):
         ForeignKey("documents.id", ondelete="SET NULL"),
         nullable=True,
     )
+    # values_callable: persist lowercase enum VALUES ("reading"), not member
+    # NAMES ("READING") — the Postgres enum type only accepts the values.
     activity_type: Mapped[ActivityType] = mapped_column(
-        SAEnum(ActivityType), nullable=False
+        SAEnum(ActivityType, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
     )
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     date: Mapped[DateType] = mapped_column(

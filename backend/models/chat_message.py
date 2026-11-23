@@ -32,7 +32,12 @@ class ChatMessage(Base):
         nullable=True,
         index=True,
     )
-    role: Mapped[ChatRole] = mapped_column(SAEnum(ChatRole), nullable=False)
+    # values_callable: persist lowercase enum VALUES ("user"), not member
+    # NAMES ("USER") — the Postgres enum type only accepts the values.
+    role: Mapped[ChatRole] = mapped_column(
+        SAEnum(ChatRole, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+    )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
